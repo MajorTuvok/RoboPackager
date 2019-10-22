@@ -1,0 +1,11 @@
+/*
+
+# folders
+!/.idea
+/.idea/dictionaries
+!/src
+!/res
+
+# files
+!/.gitignore
+!/RoboPackager.iml
