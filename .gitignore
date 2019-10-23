@@ -3,6 +3,7 @@
 # folders
 !/.idea
 /.idea/dictionaries
+/.idea/discord.xml
 !/src
 !/res
 
