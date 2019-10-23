@@ -114,7 +114,7 @@ public class StartFrame extends SizedFrame {
             }
 
         try {
-            Files.createDirectories(path.getParent());
+            Files.createDirectories(path.toAbsolutePath().getParent());
         } catch (IOException e) {
             System.err.println("Failed to create parent directories of " + path + "!");
             e.printStackTrace();
