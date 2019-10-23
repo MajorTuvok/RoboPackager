@@ -6,6 +6,7 @@ import de.ewoche.packager.layout.Constants;
 import de.ewoche.packager.settings.RoboPackagerConfig;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -89,7 +90,7 @@ public final class RobotDiscoverer {
                     System.err.println("Failed to load class " + binaryName + " from file " + file + " in " + searchRoot + "! Skipping!");
                     return FileVisitResult.CONTINUE;
                 }
-                if (robotClass.isAssignableFrom(clazz)) {
+                if (robotClass.isAssignableFrom(clazz) && ! Modifier.isAbstract(robotClass.getModifiers())) {
                     System.out.println("Found Robot: " + clazz.getName());
                     robots.add(createDiscovered(file, clazz.getName()));
                 } else {
