@@ -23,6 +23,7 @@ public final class RoboPackagerConfig {
     private static final String KEY_ECLIPSE_WORKSPACE = "eclipse_workspace";
 
     private static final String CONFIG_NAME = "config.properties";
+    private static final String DEFAULT_ROBOCODE_PATH;
     private static Path RUN_DIR;
 
     static {
@@ -31,6 +32,12 @@ public final class RoboPackagerConfig {
         } catch (URISyntaxException e) {
             RUN_DIR = null;
             System.err.println("Failed to resolve Run dir");
+        }
+        if (System.getProperty("os.name").contains("Windows")) { //contains, in order to hopefully catch 8, 7, Vista or even XP
+            DEFAULT_ROBOCODE_PATH = "C:/Robocode";
+        } else {
+            String home = System.getenv().getOrDefault("home", "/home/");
+            DEFAULT_ROBOCODE_PATH = home + "/robocode";
         }
     }
 
@@ -59,7 +66,7 @@ public final class RoboPackagerConfig {
     }
 
     public Path getRobocodeInstallDir() {
-        return Paths.get(underlyingProps.getProperty(KEY_ROBOCODE_INSTALL_DIR, ""));
+        return Paths.get(underlyingProps.getProperty(KEY_ROBOCODE_INSTALL_DIR, DEFAULT_ROBOCODE_PATH));
     }
 
     public void setRobocodeInstallDir(Path installDir) {
