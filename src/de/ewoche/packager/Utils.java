@@ -2,7 +2,6 @@ package de.ewoche.packager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.nio.file.Files;
@@ -74,7 +73,7 @@ public final class Utils {
                 while ((line = reader.readLine()) != null)
                     builder.append(line);
                 HOST_NAME = builder.toString();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Unable to resolve Host Name! Assuming tux1");
                 e.printStackTrace();
                 return "tux1";
