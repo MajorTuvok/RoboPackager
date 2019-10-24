@@ -1,15 +1,16 @@
 package de.ewoche.packager.settings;
 
+import de.ewoche.packager.Utils;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Properties;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class RoboPackagerConfig {
@@ -23,7 +24,7 @@ public final class RoboPackagerConfig {
     private static final String KEY_ECLIPSE_WORKSPACE = "eclipse_workspace";
 
     private static final String CONFIG_NAME = "config.properties";
-    private static final String DEFAULT_ROBOCODE_PATH;
+    private static String DEFAULT_ROBOCODE_PATH = null;
     private static Path RUN_DIR;
 
     static {
@@ -33,12 +34,7 @@ public final class RoboPackagerConfig {
             RUN_DIR = null;
             System.err.println("Failed to resolve Run dir");
         }
-        if (System.getProperty("os.name").contains("Windows")) { //contains, in order to hopefully catch 8, 7, Vista or even XP
-            DEFAULT_ROBOCODE_PATH = "C:/Robocode";
-        } else {
-            String home = System.getenv().getOrDefault("home", "/home/");
-            DEFAULT_ROBOCODE_PATH = home + "/robocode";
-        }
+
     }
 
     private final Properties underlyingProps;
@@ -66,7 +62,10 @@ public final class RoboPackagerConfig {
     }
 
     public Path getRobocodeInstallDir() {
-        return Paths.get(underlyingProps.getProperty(KEY_ROBOCODE_INSTALL_DIR, DEFAULT_ROBOCODE_PATH));
+        String value = underlyingProps.getProperty(KEY_ROBOCODE_INSTALL_DIR, "");
+        if (value == null || value.isEmpty())
+            value = getDefaultRobocodePath();
+        return Paths.get(value);
     }
 
     public void setRobocodeInstallDir(Path installDir) {
@@ -160,5 +159,52 @@ public final class RoboPackagerConfig {
 
     private Path getConfigPath() {
         return RUN_DIR != null ? RUN_DIR.resolve(CONFIG_NAME) : null;
+    }
+
+    private static String getDefaultRobocodePath() {
+        if (DEFAULT_ROBOCODE_PATH == null) {
+            if (System.getProperty("os.name").contains("Windows")) { //contains, in order to hopefully catch 8, 7, Vista or even XP
+                DEFAULT_ROBOCODE_PATH = "C:/Robocode";
+            } else {
+                String home = System.getenv().getOrDefault("HOME", "/home/");
+                if (Utils.getHostName().contains("tux")) {
+                    String robocodeContainer = home + "/.local/share/robocode/";
+                    DEFAULT_ROBOCODE_PATH = findLatestVersion(robocodeContainer);
+                } else
+                    DEFAULT_ROBOCODE_PATH = home + "/robocode";
+            }
+        }
+        return DEFAULT_ROBOCODE_PATH;
+    }
+
+    private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+[.])*[0-9]+");
+
+    private static String findLatestVersion(String versionDir) {
+        Path dir = Paths.get(versionDir).toAbsolutePath();
+        if (! Files.exists(dir) || ! Files.isDirectory(dir))
+            return versionDir;
+        Deque<Path> subDirs = new LinkedList<>();
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                    subDirs.add(dir);
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+            });
+        } catch (IOException e) {
+            System.err.println("Failed to scan " + versionDir + " for robocode installations!");
+            e.printStackTrace();
+        }
+        return subDirs.stream()
+                .map(Path::toAbsolutePath)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .filter(s -> VERSION_PATTERN.matcher(s).matches())
+                .map(ComparableRobocodeVersion::new)
+                .max(Comparator.naturalOrder())
+                .map(ComparableRobocodeVersion::toString)
+                .map(s -> versionDir + File.pathSeparator + s)
+                .orElse(versionDir);
     }
 }

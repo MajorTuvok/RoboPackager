@@ -2,6 +2,9 @@ package de.ewoche.packager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +14,7 @@ import java.util.List;
 import static de.ewoche.packager.layout.Constants.*;
 
 public final class Utils {
+    private static String HOST_NAME = null;
     private Utils() {}
 
     public static void displayAccessDenied(Path file, Component parent) {
@@ -60,5 +64,22 @@ public final class Utils {
         else
             res.add(toSplit.substring(start));
         return res;
+    }
+
+    public static String getHostName() {
+        if (HOST_NAME == null) {
+            try (LineNumberReader reader = new LineNumberReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream()))) {
+                StringBuilder builder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null)
+                    builder.append(line);
+                HOST_NAME = builder.toString();
+            } catch (IOException e) {
+                System.err.println("Unable to resolve Host Name! Assuming tux1");
+                e.printStackTrace();
+                return "tux1";
+            }
+        }
+        return HOST_NAME;
     }
 }
