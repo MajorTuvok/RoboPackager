@@ -181,21 +181,25 @@ public final class RoboPackagerConfig {
 
     private static String findLatestVersion(String versionDir) {
         Path dir = Paths.get(versionDir).toAbsolutePath();
-        if (! Files.exists(dir) || ! Files.isDirectory(dir))
+        if (! Files.exists(dir) || ! Files.isDirectory(dir)) {
+            System.err.println(versionDir + " Doesn't exist or isn't a directory!");
             return versionDir;
+        }
         Deque<Path> subDirs = new LinkedList<>();
         try {
             Files.walkFileTree(dir, new SimpleFileVisitor<>() {
                 @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                    subDirs.add(dir);
-                    return FileVisitResult.SKIP_SUBTREE;
+                public FileVisitResult preVisitDirectory(Path visitDir, BasicFileAttributes attrs) {
+                    subDirs.add(visitDir);
+                    return visitDir.toAbsolutePath().equals(dir) ? FileVisitResult.CONTINUE : FileVisitResult.SKIP_SUBTREE;
                 }
             });
         } catch (IOException e) {
             System.err.println("Failed to scan " + versionDir + " for robocode installations!");
             e.printStackTrace();
         }
+        if (subDirs.isEmpty())
+            System.err.println("No robocode installations found in " + versionDir + "!");
         return subDirs.stream()
                 .map(Path::toAbsolutePath)
                 .map(Path::getFileName)
@@ -204,7 +208,7 @@ public final class RoboPackagerConfig {
                 .map(ComparableRobocodeVersion::new)
                 .max(Comparator.naturalOrder())
                 .map(ComparableRobocodeVersion::toString)
-                .map(s -> versionDir + File.pathSeparator + s)
+                .map(s -> versionDir + File.separator + s)
                 .orElse(versionDir);
     }
 }

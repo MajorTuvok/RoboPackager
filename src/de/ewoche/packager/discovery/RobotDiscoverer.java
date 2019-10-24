@@ -90,7 +90,7 @@ public final class RobotDiscoverer {
                     System.err.println("Failed to load class " + binaryName + " from file " + file + " in " + searchRoot + "! Skipping!");
                     return FileVisitResult.CONTINUE;
                 }
-                if (robotClass.isAssignableFrom(clazz) && ! Modifier.isAbstract(robotClass.getModifiers())) {
+                if (robotClass.isAssignableFrom(clazz) && ! Modifier.isAbstract(clazz.getModifiers())) {
                     System.out.println("Found Robot: " + clazz.getName());
                     robots.add(createDiscovered(file, clazz.getName()));
                 } else {
