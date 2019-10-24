@@ -40,7 +40,7 @@ public class ConfigureRobotFrame extends SizedFrame {
         this.config = config;
         this.remaining = remaining;
         this.displayed = new RobotProperties(remaining.removeFirst(), config);
-        this.skipButton.addActionListener(ev -> displayNext());
+        this.skipButton.addActionListener(ev -> skipRobot());
         this.nextButton.addActionListener(ev -> onNext());
         setContent();
         setContentPane(rootPanel);
@@ -48,40 +48,13 @@ public class ConfigureRobotFrame extends SizedFrame {
 
     private void onNext() {
         readContent();
-        displayed.save();
-        if (! remaining.isEmpty()) {
-            displayed.save();
+        if (! displayed.save() && ! Utils.continueNotSaved(displayed.getRobotPropertiesPath().toString(), this))
+            return;
+        if (! remaining.isEmpty())
             displayNext();
-        } else {
-            JarPackager packager = new JarPackager(config);
-            try {
-                PackagingResult result = packager.packBuildDir();
-                if (! result.isSuccess()) {
-                    displayPackagingFailure(result);
-                    return;
-                }
-                Main.popWindow();
-                dispose();
-            } catch (FileAccessDeniedException e) {
-                e.printStackTrace();
-                Utils.displayAccessDenied(e.getPath(), this);
-            } catch (IllegalTargetFileException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, String.format(ERROR_TARGET_FILE_INVALID_MESSAGE, e.getTargetFile()),
-                        ERROR_TARGET_FILE_INVALID, JOptionPane.ERROR_MESSAGE);
-            } catch (DirectoryCannotBeScannedException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, String.format(ERROR_JAR_DIR_SCAN_MESSAGE, e.getSourceDirectory()),
-                        ERROR_JAR_DIR_SCAN, JOptionPane.ERROR_MESSAGE);
-            } catch (JarCannotBeWrittenException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, String.format(ERROR_JAR_WRITE_MESSAGE, e.getTargetFile()),
-                        ERROR_JAR_WRITE, JOptionPane.ERROR_MESSAGE);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, ERROR_GENERIC_PACK_FAILED_MESSAGE, ERROR_GENERIC_PACK_FAILED, JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        else
+            packRobots();
+
     }
 
     private void displayPackagingFailure(PackagingResult result) {
@@ -104,8 +77,53 @@ public class ConfigureRobotFrame extends SizedFrame {
         displayed.setDescription(descriptionTextArea.getText());
     }
 
+    private void skipRobot() {
+        if (! displayed.delete() && ! Utils.continueNotDeleted(displayed.getRobotPropertiesPath().toString(), this))
+            return;
+        if (! remaining.isEmpty())
+            displayNext();
+        else
+            packRobots();
+    }
+
     private void displayNext() {
         Main.replaceWindow(new ConfigureRobotFrame(config, remaining));
         dispose();
+    }
+
+    private void displayPackingSuccess() {
+        JOptionPane.showMessageDialog(this, PACKING_SUCCESS_MESSAGE, PACKING_SUCCESS, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void packRobots() {
+        JarPackager packager = new JarPackager(config);
+        try {
+            PackagingResult result = packager.packBuildDir();
+            if (! result.isSuccess()) {
+                displayPackagingFailure(result);
+                return;
+            }
+            displayPackingSuccess();
+            Main.popWindow();
+            dispose();
+        } catch (FileAccessDeniedException e) {
+            e.printStackTrace();
+            Utils.displayAccessDenied(e.getPath(), this);
+        } catch (IllegalTargetFileException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, String.format(ERROR_TARGET_FILE_INVALID_MESSAGE, e.getTargetFile()),
+                    ERROR_TARGET_FILE_INVALID, JOptionPane.ERROR_MESSAGE);
+        } catch (DirectoryCannotBeScannedException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, String.format(ERROR_JAR_DIR_SCAN_MESSAGE, e.getSourceDirectory()),
+                    ERROR_JAR_DIR_SCAN, JOptionPane.ERROR_MESSAGE);
+        } catch (JarCannotBeWrittenException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, String.format(ERROR_JAR_WRITE_MESSAGE, e.getTargetFile()),
+                    ERROR_JAR_WRITE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, ERROR_GENERIC_PACK_FAILED_MESSAGE, ERROR_GENERIC_PACK_FAILED, JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

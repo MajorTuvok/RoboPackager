@@ -28,6 +28,14 @@ public final class Utils {
         JOptionPane.showMessageDialog(parent, String.format(ERROR_PATH_DOES_NOT_EXIST_MESSAGE, text), ERROR_PATH_DOES_NOT_EXIST, JOptionPane.ERROR_MESSAGE);
     }
 
+    public static boolean continueNotDeleted(String path, Component parent) {
+        return JOptionPane.showConfirmDialog(parent, String.format(ERROR_ROBOT_NOT_DELETED_MESSAGE, parent), ERROR_ROBOT_NOT_DELETED, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+    }
+
+    public static boolean continueNotSaved(String path, Component parent) {
+        return JOptionPane.showConfirmDialog(parent, String.format(ERROR_ROBOT_NOT_SAVED, parent), ERROR_ROBOT_NOT_SAVED, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+    }
+
     public static boolean checkExistsAndIsDirectory(String text, Component parent) {
         return checkExistsAndIsDirectory(Paths.get(text), text, parent);
     }

@@ -108,11 +108,29 @@ public final class RobotProperties {
         underlyingProps.setProperty(KEY_ROBOT_NAME, robotName);
     }
 
-    public void save() {
+    public boolean save() {
         try (OutputStream stream = Files.newOutputStream(discoveredRobot.getRobotProperties())) {
             underlyingProps.store(stream, null);
+            return true;
         } catch (IOException e) { //TODO notify user!
             System.err.println("Failed to save Robot-properties to " + discoveredRobot.getRobotProperties() + "! This will certainly cause unexpected behaviour later!");
+            e.printStackTrace();
+            return false;
         }
+    }
+
+    public boolean delete() {
+        try {
+            Files.deleteIfExists(discoveredRobot.getRobotProperties());
+            return true;
+        } catch (IOException e) {
+            System.err.println("Failed to delete Robot-Properties at " + discoveredRobot.getRobotProperties() + "! This may cause this Robot to be packaged even though it should have been skipped!");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Path getRobotPropertiesPath() {
+        return discoveredRobot.getRobotProperties();
     }
 }

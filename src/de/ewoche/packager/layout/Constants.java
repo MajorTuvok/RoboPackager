@@ -46,8 +46,15 @@ public interface Constants {
     public static final String ERROR_ROBOT_DISCOVER_DIR_VISIT_MESSAGE = LANG_RESOURCES.getString("error.robot_discover.directory_visit.message");
     public static final String ERROR_ROBOT_DISCOVER_NO_ROBOT = LANG_RESOURCES.getString("error.robot_discover.no_robot");
     public static final String ERROR_ROBOT_DISCOVER_NO_ROBOT_MESSAGE = LANG_RESOURCES.getString("error.robot_discover.no_robot.message");
+    public static final String ERROR_ROBOT_NOT_DELETED = LANG_RESOURCES.getString("error.robot_delete");
+    public static final String ERROR_ROBOT_NOT_DELETED_MESSAGE = LANG_RESOURCES.getString("error.robot_delete.message");
     public static final String ERROR_TARGET_FILE_INVALID = LANG_RESOURCES.getString("error.target_file_invalid");
     public static final String ERROR_TARGET_FILE_INVALID_MESSAGE = LANG_RESOURCES.getString("error.target_file_invalid.message");
+    public static final String ERROR_ROBOT_NOT_SAVED = LANG_RESOURCES.getString("error.robot_save");
+    public static final String ERROR_ROBOT_NOT_SAVED_MESSAGE = LANG_RESOURCES.getString("error.robot_save.message");
+
+    public static final String PACKING_SUCCESS = LANG_RESOURCES.getString("message.packing_success");
+    public static final String PACKING_SUCCESS_MESSAGE = LANG_RESOURCES.getString("message.packing_success.message");
 
     public static final String WARNING_BUILD_DIR_NOT_DETECTED = LANG_RESOURCES.getString("warning.build_dir_not_resolved");
     public static final String WARNING_BUILD_DIR_NOT_DETECTED_MESSAGE = LANG_RESOURCES.getString("warning.build_dir_not_resolved.message");
